@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
 # plot_scaling.py
-# Parse results.txt from spmv_omp and generate IEEE-ready plots.
+# Parse results.txt from spmv.
 #
 # Usage:
 #   python3 plot_scaling.py results.txt
@@ -12,7 +9,6 @@
 #   plot_speedup.png
 #   plot_scheduling.png
 #   plot_bandwidth.png
-#   plot_density.png   (optional)
 #
 # Requirements: pandas, matplotlib  (pip install pandas matplotlib)
 
@@ -32,7 +28,7 @@ def _apply_grid(ax):
     ax.grid(True, alpha=0.25, linewidth=0.6)
 
 def _order_by_nnz(matrices_dict, names):
-    # ritorna i nomi ordinati per nnz crescente
+    # return name sorted by nnz
     return sorted(names, key=lambda n: matrices_dict[n]["meta"]["nnz"])
 
 
@@ -225,7 +221,7 @@ def main():
             y.append(seq_p90 / p90 if (p90 and p90>0 and not math.isnan(p90)) else np.nan)
         ax.plot(THREAD_SET, y, marker="o", label=name)
 
-    # linea ideale
+    # line of ideal scaling
     ax.plot([1, THREAD_SET[-1]], [1, THREAD_SET[-1]], linestyle="--", label="Ideal linear scaling")
     ax.set_xticks(THREAD_SET)
     ax.set_xlabel("Threads (static)")
@@ -259,7 +255,7 @@ def main():
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    # ordina per nnz per coerenza
+    # order by nnz
     order = _order_by_nnz(matrices, df["matrix"].tolist())
     df = df.set_index("matrix").loc[order].reset_index()
 
@@ -311,31 +307,8 @@ def main():
     plt.savefig("plot_bandwidth.png", dpi=200)   # tieni anche 'all'
     plt.close(fig)
 
-    # --- Plot 5 (optional): Density vs Sequential Time (log-log) ---
-    fig = plt.figure(figsize=(6,5))
-    dens, tms, labels = [], [], []
-    for name, data in matrices.items():
-        M = data["meta"]["M"]; N = data["meta"]["N"]; nnz = data["meta"]["nnz"]
-        density = 100.0 * nnz / (M*N) if M and N else float("nan")
-        seq_p90 = data["summary"].get("seq", {}).get("p90_ms", float("nan"))
-        if not (math.isnan(density) or math.isnan(seq_p90)):
-            dens.append(density); tms.append(seq_p90); labels.append(name)
-    if dens:
-        plt.scatter(dens, tms)
-        for d, t, lab in zip(dens, tms, labels):
-            plt.annotate(lab, (d, t), textcoords="offset points", xytext=(4,4), fontsize=8)
-        plt.xscale("log"); plt.yscale("log")
-        plt.xlabel("Density (%)")
-        plt.ylabel("Sequential Time (ms, p90)")
-        plt.title("Density vs Sequential Time (log-log)")
-        plt.tight_layout()
-        plt.savefig("plot_density.png", dpi=200)
-        plt.close(fig)
-    else:
-        Path("plot_density.png").write_text("Not enough data", encoding="utf-8")
-
     print("Done. Generated PNGs:")
-    for fn in ["plot_seq_vs_parallel.png","plot_speedup.png","plot_scheduling.png","plot_bandwidth.png","plot_density.png","results.csv"]:
+    for fn in ["plot_seq_vs_parallel.png","plot_speedup.png","plot_scheduling.png","plot_bandwidth.png"]:
         print(" -", fn)
 
 if __name__ == "__main__":
