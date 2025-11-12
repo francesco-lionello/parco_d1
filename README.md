@@ -13,8 +13,10 @@ The objectives are:
 
 ## How to Run on the UniTN HPC Cluster
 
-⚠️ Note: The matrix Spielman_k200.mtx is compressed as Spielman_k200.rarbecause it exceeds GitHub’s 100 MB limit.
-Before submit the job, extract it.
+>⚠️ Note: The matrix `Spielman_k200.mtx` is compressed as `Spielman_k200.rar`
+>because it exceeds GitHub’s 100 MB limit.
+>
+>Before submit the job, extract it.
 
 ### Submit the job
 
@@ -22,7 +24,7 @@ Before submit the job, extract it.
 qsub spmv.pbs
 ```  
 
-### 📂 Check the job outputs
+### Check the job outputs
 - `spmv.out` → standard output  
 - `spmv.err` → error 
 - `results.txt` → performance results
